@@ -4,11 +4,32 @@
  */
 package createfunctionemp;
 
+import java.util.List;
+import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Vector;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
+import com.opencsv.CSVReader;
+import com.opencsv.CSVWriter;
+import static com.opencsv.ICSVWriter.NO_QUOTE_CHARACTER;
+import com.opencsv.exceptions.CsvException;
+import java.io.FileNotFoundException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -19,8 +40,22 @@ public class EmpCreateFunc extends javax.swing.JFrame {
     /**
      * Creates new form EmpCreateFunc
      */
+    
+    private static final String CSV_FILE = "src/createfunctionemp/EmployeeDetails.csv";
+    
+    String newLastName = "UpdatedLastName" ;
+    String newFirstName = "UpdatedFirstName"; 
+    String newSSSNo = "UpdatedSSSNo"; 
+    String newPhilHealthNo = "UpdatedPhilHealthNo"; 
+    String newTINNo = "UpdatedTINNo"; 
+    String newPagibigNo = "UpdatedPagibigNo"; 
+    
+    
     public EmpCreateFunc() {
         initComponents();
+        
+         // Read CSV data and populate the JTable
+        populateTableFromCSV(CSV_FILE);
     }
 
     /**
@@ -55,6 +90,7 @@ public class EmpCreateFunc extends javax.swing.JFrame {
         jScrollPane2 = new javax.swing.JScrollPane();
         empDetails = new javax.swing.JTable();
         btnAdd = new javax.swing.JButton();
+        btnUpdate = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         addWindowListener(new java.awt.event.WindowAdapter() {
@@ -173,42 +209,53 @@ public class EmpCreateFunc extends javax.swing.JFrame {
             }
         });
 
+        btnUpdate.setBackground(new java.awt.Color(0, 204, 0));
+        btnUpdate.setFont(new java.awt.Font("Segoe UI Emoji", 1, 14)); // NOI18N
+        btnUpdate.setText("Update Employee ");
+        btnUpdate.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnUpdateActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel3Layout.createSequentialGroup()
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(jPanel3Layout.createSequentialGroup()
-                            .addGap(21, 21, 21)
-                            .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                .addComponent(jLabel9)
-                                .addComponent(jLabel10)
-                                .addComponent(jLabel8)
-                                .addComponent(jLabel7)
-                                .addComponent(jLabel6)
-                                .addComponent(jLabel5)
-                                .addComponent(jLabel4)
-                                .addComponent(jLabel3)
-                                .addComponent(jLabel2))
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                            .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(empID, javax.swing.GroupLayout.PREFERRED_SIZE, 219, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(empFirstName, javax.swing.GroupLayout.PREFERRED_SIZE, 219, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(empLastName, javax.swing.GroupLayout.PREFERRED_SIZE, 219, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(empBday, javax.swing.GroupLayout.PREFERRED_SIZE, 219, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(empAddy, javax.swing.GroupLayout.PREFERRED_SIZE, 219, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(empPhone, javax.swing.GroupLayout.PREFERRED_SIZE, 219, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(empStatus, javax.swing.GroupLayout.PREFERRED_SIZE, 219, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(empPosition, javax.swing.GroupLayout.PREFERRED_SIZE, 219, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(empSupp, javax.swing.GroupLayout.PREFERRED_SIZE, 219, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addGroup(jPanel3Layout.createSequentialGroup()
-                            .addGap(36, 36, 36)
-                            .addComponent(jLabel1)))
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel3Layout.createSequentialGroup()
-                        .addGap(65, 65, 65)
-                        .addComponent(btnAdd)))
+                        .addGap(21, 21, 21)
+                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jLabel9)
+                            .addComponent(jLabel10)
+                            .addComponent(jLabel8)
+                            .addComponent(jLabel7)
+                            .addComponent(jLabel6)
+                            .addComponent(jLabel5)
+                            .addComponent(jLabel4)
+                            .addComponent(jLabel3)
+                            .addComponent(jLabel2)
+                            .addComponent(btnAdd))
+                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jPanel3Layout.createSequentialGroup()
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(empID, javax.swing.GroupLayout.PREFERRED_SIZE, 219, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(empFirstName, javax.swing.GroupLayout.PREFERRED_SIZE, 219, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(empLastName, javax.swing.GroupLayout.PREFERRED_SIZE, 219, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(empBday, javax.swing.GroupLayout.PREFERRED_SIZE, 219, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(empAddy, javax.swing.GroupLayout.PREFERRED_SIZE, 219, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(empPhone, javax.swing.GroupLayout.PREFERRED_SIZE, 219, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(empStatus, javax.swing.GroupLayout.PREFERRED_SIZE, 219, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(empPosition, javax.swing.GroupLayout.PREFERRED_SIZE, 219, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(empSupp, javax.swing.GroupLayout.PREFERRED_SIZE, 219, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                            .addGroup(jPanel3Layout.createSequentialGroup()
+                                .addGap(22, 22, 22)
+                                .addComponent(btnUpdate))))
+                    .addGroup(jPanel3Layout.createSequentialGroup()
+                        .addGap(36, 36, 36)
+                        .addComponent(jLabel1)))
                 .addGap(18, 18, 18)
                 .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 806, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(30, Short.MAX_VALUE))
@@ -255,14 +302,15 @@ public class EmpCreateFunc extends javax.swing.JFrame {
                         .addGap(18, 18, 18)
                         .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(empSupp, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel10))
-                        .addGap(48, 48, 48))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
+                            .addComponent(jLabel10)))
+                    .addGroup(jPanel3Layout.createSequentialGroup()
                         .addContainerGap()
-                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 394, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(22, 22, 22)))
-                .addComponent(btnAdd, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(76, Short.MAX_VALUE))
+                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 394, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGap(33, 33, 33)
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btnAdd, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnUpdate, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(91, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -283,7 +331,7 @@ public class EmpCreateFunc extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
-       
+     
     }//GEN-LAST:event_formWindowClosing
 
     private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddActionPerformed
@@ -298,20 +346,68 @@ public class EmpCreateFunc extends javax.swing.JFrame {
         String position = empPosition.getText();
         String supervisor = empSupp.getText();
 
-        if (id.isEmpty() || name.isEmpty() || lastName.isEmpty() || birthday.isEmpty() || address.isEmpty() || phone.isEmpty() || status.isEmpty() || position.isEmpty() || supervisor.isEmpty()) {
+        if (id.isEmpty() || 
+            name.isEmpty() || 
+            lastName.isEmpty() || 
+            birthday.isEmpty() || 
+            address.isEmpty() || 
+            phone.isEmpty() || 
+            status.isEmpty() || 
+            position.isEmpty() || 
+            supervisor.isEmpty()) {
             JOptionPane.showMessageDialog (this,
                 "Pease enter all fields",
                 "Try Again",
                 JOptionPane.ERROR_MESSAGE);
-
-        } else {
+        } 
+        
+        else {
             DefaultTableModel model = (DefaultTableModel) empDetails.getModel();
             model.addRow(new Object[] {id, name, lastName, birthday, address, phone, status, position, supervisor});
-
+      
         }
 
     }//GEN-LAST:event_btnAddActionPerformed
 
+     public void populateTableFromCSV(String filePath) {
+        try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
+            String line;
+            Vector<Vector<String>> data = new Vector<>();
+            Vector<String> columnNames = new Vector<>();
+
+           // Read column names
+            line = br.readLine();
+            String[] columns = line.split(",");
+            columnNames.add(columns[0].trim()); // Employee Number
+            columnNames.add(columns[3].trim()); // Last Name
+            columnNames.add(columns[4].trim()); // First Name
+            columnNames.add(columns[8].trim()); // SSS No.
+            columnNames.add(columns[9].trim()); // PhilHealth No.
+            columnNames.add(columns[10].trim()); // TIN
+            columnNames.add(columns[11].trim()); // Pagibig No.
+
+            // Read data rows
+            while ((line = br.readLine()) != null) {
+                String[] values = line.split(",");
+                Vector<String> row = new Vector<>();
+                row.add(values[0].trim()); // Employee Number
+                row.add(values[3].trim()); // Last Name
+                row.add(values[4].trim()); // First Name
+                row.add(values[8].trim()); // SSS No.
+                row.add(values[9].trim()); // PhilHealth No.
+                row.add(values[10].trim()); // TIN
+                row.add(values[11].trim()); // Pagibig No.
+                data.add(row);
+            }
+
+            // Create a DefaultTableModel with the data
+            DefaultTableModel model = new DefaultTableModel(data, columnNames);
+            empDetails.setModel(model);            
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+     
     private void empSuppActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_empSuppActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_empSuppActionPerformed
@@ -344,7 +440,148 @@ public class EmpCreateFunc extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_empIDActionPerformed
 
+    private void btnUpdateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUpdateActionPerformed
+        // TODO add your handling code here:
+          // Add action listener for the "Update" button
+        btnUpdate.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {                                           
+                try {
+                    // Update employee details in your data model
+                    updateEmployeeDetails();
+                    // Refresh the JTable to reflect changes
+                    //refreshJTable();
+                } catch (IOException ex) {
+                    Logger.getLogger(EmpCreateFunc.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        });
+    }//GEN-LAST:event_btnUpdateActionPerformed
+
+    private void updateEmployeeDetails() throws IOException {
+        // Get the selected row index
+        int selectedRow = empDetails.getSelectedRow();
+       
+        // Check if a row is selected
+        if (selectedRow != -1) {
+            // Get the data from the selected row
+            String lastName = (String) empDetails.getValueAt(selectedRow, 1);
+            String firstName = (String) empDetails.getValueAt(selectedRow, 2);
+            String sssNo = (String) empDetails.getValueAt(selectedRow, 3);
+            String philHealthNo = (String) empDetails.getValueAt(selectedRow, 4);
+            String tinNo = (String) empDetails.getValueAt(selectedRow, 5);
+            String pagibigNo = (String) empDetails.getValueAt(selectedRow, 6);
+
+            if (newLastName != null) {
+                empDetails.setValueAt(lastName, selectedRow, 1); // Update last name
+            }            
+            if (newFirstName != null) {
+                empDetails.setValueAt(firstName, selectedRow, 2); // Update first name
+            }
+            if (newSSSNo != null) {
+                empDetails.setValueAt(sssNo, selectedRow, 3); // Update SSS No.
+            }
+            if (newPhilHealthNo != null) {
+                empDetails.setValueAt(philHealthNo, selectedRow, 4); // Update PhilHealth No.
+            }
+            if (newTINNo != null) {
+                empDetails.setValueAt(tinNo, selectedRow, 5); // Update TIN
+            }
+            if (newPagibigNo != null) {
+                empDetails.setValueAt(pagibigNo, selectedRow, 6); // Update Pagibig No.
+            }
+  
+            updateCSV(lastName, firstName, sssNo, philHealthNo, tinNo, pagibigNo, selectedRow);
+        }
+    }
+
+    private void refreshJTable() {       
+        // Clear the current data in the JTable
+        DefaultTableModel model = (DefaultTableModel) empDetails.getModel();
+        model.setRowCount(0);      
+        // Repopulate the JTable with updated records
+        populateTableFromCSV(CSV_FILE);        
+    }
+    
+    public void updateCSV(String lastName,
+                          String firstName, 
+                          String sssNo,
+                          String philHealthNo,
+                          String tinNo,
+                          String pagibigNo,
+                          int selectedRow) throws FileNotFoundException, IOException{
+                      
+        try{           
+            DefaultTableModel modelToCSV = (DefaultTableModel) empDetails.getModel();
+            int jTable_columnCount = modelToCSV.getColumnCount();
+            
+            //Saving all the Column Name from JTable in An Array
+            String[] jTableColumnName = new String[jTable_columnCount];           
+            for (int i=0;i<jTable_columnCount;i++){
+                jTableColumnName[i] = modelToCSV.getColumnName(i);
+            }
+            
+            //Getting Row of Data edited from Jtable
+            String[] arrEditedJTableRowData = new String [jTable_columnCount];                     
+            for (int i = 0; i < jTable_columnCount; i++) {                               
+                arrEditedJTableRowData[i] = (String) modelToCSV.getValueAt(selectedRow, i);
+             }         
+            
+            //Reading the CSV Document
+            List<List<String>> records = new ArrayList<>();      
+            try (BufferedReader br = new BufferedReader(new FileReader(CSV_FILE))) {
+            String line;
+                while ((line = br.readLine()) != null) {
+                    String[] values = line.split(",");                   
+                    records.add(Arrays.asList(values));                  
+                }
+            }           
+            catch(IOException e){e.printStackTrace();}
+        
+            //Getting the ColumnName from the CSV file.
+            List <String> csvOneLineRead = records.get(0);        
+            int csvMaxIndex = csvOneLineRead.size();
+      
+            //Converting the from an Array List to an Array
+            String[] arrCSVOneLineRead = new String[csvMaxIndex];
+            for (int i = 0; i < csvOneLineRead.size(); i++) {
+                arrCSVOneLineRead[i] = csvOneLineRead.get(i);
+            }
+        
+            //Getting the actual index of an array based from JTable Column Name
+            int[] jTableToCSVIdentifier = new int[jTable_columnCount];
+            for(int i=0;i<jTable_columnCount;i++){
+                for(int j=0;j<arrCSVOneLineRead.length;j++){
+                    if(jTableColumnName[i].equalsIgnoreCase(arrCSVOneLineRead[j])){
+                        jTableToCSVIdentifier[i] = j;
+                    }
+                }
+            }            
+                             
+            try{             
+                CSVReader csvReader = new CSVReader(new FileReader(new File(CSV_FILE)));                
+                List<String[]> allData = csvReader.readAll();    
+                
+                for(int i=0;i<jTableToCSVIdentifier.length;i++){
+                   allData.get(selectedRow+1)[jTableToCSVIdentifier[i]] = arrEditedJTableRowData[i];
+                }
+                
+                CSVWriter csvWriter = new CSVWriter (new FileWriter(new File(CSV_FILE)));
+                csvWriter.writeAll(allData,false);
+                csvWriter.flush();
+                        
+                }
+            catch(CsvException e){e.printStackTrace();}                   
+        }
+        catch (IOException e){e.printStackTrace();}
+    }
     /**
+     * @param args the command line arguments
+     */    /**
+     * @param args the command line arguments
+     */    /**
+     * @param args the command line arguments
+     */    /**
      * @param args the command line arguments
      */
     public static void main(String args[]) {
@@ -381,6 +618,7 @@ public class EmpCreateFunc extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAdd;
+    private javax.swing.JButton btnUpdate;
     private javax.swing.JTextField empAddy;
     private javax.swing.JTextField empBday;
     private javax.swing.JTable empDetails;
